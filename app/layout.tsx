@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
-import "./styles.css";
+import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "PhilAI Browser",
-  description: "Jarvis KI-Agent für dein 3D-Druck-Business",
+  title: "PhilAI 1.0",
+  description: "Jarvis KI-Agent für dein 3D-Druck-Business"
 };
 
 export default function RootLayout({
-  children,
+  children
 }: {
   children: React.ReactNode;
 }) {

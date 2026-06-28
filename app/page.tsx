@@ -1,10 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
 import {
   Brain,
-  Mic,
-  Send,
+  Home,
   Printer,
   ShoppingBag,
   TrendingUp,
@@ -12,249 +10,303 @@ import {
   Euro,
   Package,
   Settings,
-  Home,
-  Zap
+  Mic,
+  Send,
+  Zap,
+  CheckCircle2,
+  AlertTriangle
 } from "lucide-react";
+import { useMemo, useState } from "react";
 
-const demoData = {
-  owner: "Philipp",
-  printer: {
-    name: "Bambu Lab P2S Combo",
-    status: "Bereit",
-    job: "Makita Akkuhalter V2",
-    progress: 64,
-    timeLeft: "1h 28min",
-    nozzle: 220,
-    bed: 55
-  },
-  business: {
-    revenueToday: 87.3,
-    profitWeek: 426,
-    openOrders: 4,
-    ideasFound: 12
-  },
-  shops: [
-    { name: "Etsy", status: "Demo", orders: 2, trend: "+12%" },
-    { name: "Willhaben", status: "Demo", orders: 1, trend: "stabil" },
-    { name: "Eigener Shop", status: "geplant", orders: 0, trend: "offen" }
-  ],
-  market: [
-    { niche: "Camper-Kabelhalter", score: 95, competition: "niedrig", profit: "hoch" },
-    { niche: "Starlink Mini Kabelrolle", score: 91, competition: "niedrig", profit: "hoch" },
-    { niche: "Makita Akkuhalter V2", score: 88, competition: "mittel", profit: "gut" }
-  ],
-  ideas: [
-    {
-      title: "Starlink Mini Kabelrolle",
-      text: "Wenig Konkurrenz, klare Zielgruppe, hoher Nutzen für Camper.",
-      profit: "6 € bis 14 € pro Verkauf"
-    },
-    {
-      title: "Camper-Wandhaken mit Schraubabdeckung",
-      text: "Saisonal stark, einfach zu drucken und gut personalisierbar.",
-      profit: "4,50 € bis 9 € pro Verkauf"
-    },
-    {
-      title: "Modularer Makita Akkuhalter V2",
-      text: "Passt gut zu deiner bisherigen Zielgruppe und lässt sich als Set verkaufen.",
-      profit: "3,80 € bis 7,20 € pro Verkauf"
-    }
-  ]
+type Message = {
+  role: "ai" | "user";
+  text: string;
 };
 
-function philAnswer(message: string) {
-  const text = message.toLowerCase();
+const stats = [
+  { label: "Umsatz heute", value: "87,30 €", hint: "Demo", icon: "💰" },
+  { label: "Gewinn Woche", value: "426 €", hint: "geschätzt", icon: "📈" },
+  { label: "Offene Aufträge", value: "4", hint: "Etsy + Willhaben", icon: "📦" },
+  { label: "Neue Ideen", value: "12", hint: "heute", icon: "💡" }
+];
+
+const ideas = [
+  {
+    title: "Starlink Mini Kabelrolle",
+    score: 96,
+    reason: "Klare Zielgruppe, wenig Konkurrenz und guter Nutzen für Camper.",
+    profit: "6–14 €"
+  },
+  {
+    title: "Camper-Wandhaken Pro",
+    score: 92,
+    reason: "Saisonal stark, schnell zu drucken und gut als Set verkaufbar.",
+    profit: "4–9 €"
+  },
+  {
+    title: "Makita Akkuhalter V2",
+    score: 88,
+    reason: "Passt perfekt zu deiner bestehenden Werkzeughalter-Zielgruppe.",
+    profit: "3–7 €"
+  }
+];
+
+const market = [
+  { name: "Camper Zubehör", status: "steigend", score: 95 },
+  { name: "Starlink Mini", status: "niedrige Konkurrenz", score: 91 },
+  { name: "Werkzeughalter", status: "stabil", score: 84 },
+  { name: "Whirlpool Zubehör", status: "saisonal", score: 78 }
+];
+
+const shops = [
+  { name: "Etsy", state: "vorbereitet", orders: 2, color: "green" },
+  { name: "Willhaben", state: "vorbereitet", orders: 1, color: "yellow" },
+  { name: "Eigener Shop", state: "geplant", orders: 0, color: "blue" }
+];
+
+function createAnswer(input: string) {
+  const text = input.toLowerCase();
 
   if (text.includes("gewinn") || text.includes("umsatz")) {
-    return "Aktuell zeige ich Demo-Daten: Heute 87,30 € Umsatz und 426 € geschätzter Wochengewinn. Als nächstes verbinden wir echte Shop-Daten.";
+    return "Aktuell sehe ich in den Demo-Daten 87,30 € Umsatz heute und 426 € Wochengewinn. Sobald wir echte Shop-Daten anbinden, werte ich alles automatisch aus.";
   }
 
-  if (text.includes("drucker") || text.includes("p2s") || text.includes("bambu")) {
-    return "Dein Bambu Lab P2S Combo ist in dieser Demo als bereit hinterlegt. Später kann ich Druckstatus, Filament und Fehler automatisch überwachen.";
+  if (text.includes("drucker") || text.includes("bambu") || text.includes("p2s")) {
+    return "Dein Bambu Lab P2S Combo ist als Drucker-Modul vorbereitet. In einer späteren Version zeige ich Live-Status, AMS-Filament, Druckfortschritt und Fehlerwarnungen.";
   }
 
   if (text.includes("produkt") || text.includes("idee") || text.includes("entwickle")) {
-    return "Ich empfehle als erstes die Starlink Mini Kabelrolle. Sie hat wenig Konkurrenz, eine klare Zielgruppe und gutes Gewinnpotenzial.";
+    return "Meine beste Empfehlung ist die Starlink Mini Kabelrolle. Sie hat eine klare Zielgruppe, wenig Konkurrenz und gutes Gewinnpotenzial.";
   }
 
   if (text.includes("markt") || text.includes("analyse") || text.includes("trend")) {
-    return "Die stärksten Demo-Nischen sind Camper-Zubehör, Starlink Mini Zubehör und Makita-Halter. Ich würde mit Camper-Zubehör starten.";
+    return "Die stärksten Bereiche sind aktuell Camper-Zubehör, Starlink Mini Zubehör und Werkzeughalter. Ich würde zuerst Camper-Zubehör testen.";
   }
 
   if (text.includes("etsy") || text.includes("willhaben") || text.includes("shop")) {
-    return "Etsy und Willhaben sind als Bereiche vorbereitet. In der nächsten Version speichern wir Produkte, Preise und Verkäufe.";
+    return "Die Shop-Bereiche sind vorbereitet. Als nächstes bauen wir echte Produktlisten, Preise und Bestellungen ein.";
   }
 
-  if (text.includes("hallo") || text.includes("servus") || text.includes("phil")) {
-    return "Willkommen zurück Philipp. PhilAI ist online. Ich bin bereit, dein 3D-Druck-Business zu überwachen und neue Chancen zu finden.";
+  if (text.includes("sprache") || text.includes("reden") || text.includes("mikro")) {
+    return "Der Sprachmodus ist vorbereitet. In der nächsten Version baue ich echte Spracheingabe und Sprachausgabe ein, damit du mit mir reden kannst.";
   }
 
-  return "Verstanden. In dieser Browser-Version kann ich dir Dashboard-Daten erklären, Produktideen vorschlagen und als Jarvis-Grundlage dienen. Die echte KI-Anbindung bauen wir als nächstes ein.";
+  return "Verstanden. Ich bin als PhilAI 1.0 bereit. Du kannst mich nach Gewinn, Drucker, Produktideen, Marktanalyse und Shops fragen.";
 }
 
 export default function Page() {
   const [input, setInput] = useState("");
-  const [messages, setMessages] = useState([
+  const [messages, setMessages] = useState<Message[]>([
     {
       role: "ai",
-      text: "Guten Morgen Philipp. PhilAI ist online. Ich überwache Drucker, Shops, Marktanalyse und Produktideen."
+      text: "Willkommen zurück Philipp. PhilAI 1.0 ist online. Ich überwache dein 3D-Druck-Business, deine Produktideen und die Marktchancen."
     }
   ]);
 
   const greeting = useMemo(() => {
-    const h = new Date().getHours();
-    if (h < 11) return "Guten Morgen";
-    if (h < 18) return "Guten Tag";
+    const hour = new Date().getHours();
+    if (hour < 11) return "Guten Morgen";
+    if (hour < 18) return "Guten Tag";
     return "Guten Abend";
   }, []);
 
-  function send() {
-    if (!input.trim()) return;
-    const userText = input.trim();
+  function sendMessage() {
+    const value = input.trim();
+    if (!value) return;
+
     setInput("");
-    setMessages((old) => [...old, { role: "user", text: userText }, { role: "ai", text: philAnswer(userText) }]);
+    setMessages((old) => [
+      ...old,
+      { role: "user", text: value },
+      { role: "ai", text: createAnswer(value) }
+    ]);
   }
 
-  function voiceDemo() {
+  function voiceInfo() {
     setMessages((old) => [
       ...old,
       {
         role: "ai",
-        text: "Der Sprachmodus ist vorbereitet. In v0.3 bauen wir echte Spracheingabe und Sprachausgabe ein, damit du mit mir sprechen kannst."
+        text: "Sprachsteuerung wird als nächster Schritt aktiviert. Ziel: Du sagst zum Beispiel 'Phil, entwickle ein neues Produkt' und ich antworte per Sprache."
       }
     ]);
   }
 
   return (
-    <main className="shell">
+    <main className="layout">
       <aside className="sidebar">
         <div className="brand">
           <div className="brandOrb" />
           <div>
-            <b>PhilAI</b>
-            <span>Browser v0.2</span>
+            <strong>PhilAI</strong>
+            <span>Jarvis Business OS</span>
           </div>
         </div>
 
-        <nav>
+        <nav className="nav">
           <a className="active"><Home size={18} /> Dashboard</a>
           <a><Printer size={18} /> Drucker</a>
           <a><ShoppingBag size={18} /> Shops</a>
           <a><TrendingUp size={18} /> Marktanalyse</a>
           <a><Lightbulb size={18} /> Ideen</a>
-          <a><Euro size={18} /> Gewinne</a>
+          <a><Euro size={18} /> Finanzen</a>
           <a><Package size={18} /> Lager</a>
           <a><Settings size={18} /> Einstellungen</a>
         </nav>
       </aside>
 
-      <section className="workspace">
+      <section className="main">
         <header className="hero">
           <div>
-            <p className="eyebrow"><Zap size={16} /> Jarvis-Modus aktiv</p>
-            <h1>{greeting}, {demoData.owner}.</h1>
+            <div className="statusLine">
+              <Zap size={16} />
+              Jarvis-Modus aktiv
+            </div>
+            <h1>{greeting}, Philipp.</h1>
             <p>
-              Ich bin dein KI-Agent für 3D-Druck, Produktideen, Marktanalyse,
-              Shops und spätere Automatisierung.
+              Dein KI-Agent für 3D-Druck, Etsy, Willhaben, Marktanalyse,
+              Produktideen und spätere Automatisierung.
             </p>
           </div>
-          <div className="core">
-            <div className="coreRing" />
-            <Brain size={46} />
+
+          <div className="aiCore">
+            <div className="ring" />
+            <Brain size={48} />
           </div>
         </header>
 
-        <section className="stats">
-          <div className="card">
-            <span>🖨 Drucker</span>
-            <b>{demoData.printer.progress}%</b>
-            <small>{demoData.printer.status} · {demoData.printer.timeLeft}</small>
-            <div className="bar"><i style={{ width: `${demoData.printer.progress}%` }} /></div>
-          </div>
-          <div className="card">
-            <span>💰 Umsatz heute</span>
-            <b>{demoData.business.revenueToday.toFixed(2)} €</b>
-            <small>Demo-Daten</small>
-          </div>
-          <div className="card">
-            <span>📦 Bestellungen</span>
-            <b>{demoData.business.openOrders}</b>
-            <small>offen</small>
-          </div>
-          <div className="card">
-            <span>💡 Ideen gefunden</span>
-            <b>{demoData.business.ideasFound}</b>
-            <small>heute vorbereitet</small>
-          </div>
+        <section className="statGrid">
+          {stats.map((item) => (
+            <div className="statCard" key={item.label}>
+              <span>{item.icon} {item.label}</span>
+              <strong>{item.value}</strong>
+              <small>{item.hint}</small>
+            </div>
+          ))}
         </section>
 
-        <section className="columns">
-          <div className="panel wide">
-            <h2>💡 Neue Vorschläge</h2>
-            <div className="list">
-              {demoData.ideas.map((idea) => (
-                <div className="item" key={idea.title}>
+        <section className="split">
+          <div className="panel">
+            <div className="panelHead">
+              <h2>💡 Beste Produktvorschläge</h2>
+              <span>KI-Auswahl</span>
+            </div>
+
+            <div className="ideaList">
+              {ideas.map((idea) => (
+                <article className="idea" key={idea.title}>
                   <div>
-                    <b>{idea.title}</b>
-                    <p>{idea.text}</p>
+                    <h3>{idea.title}</h3>
+                    <p>{idea.reason}</p>
+                    <small>Gewinn pro Verkauf: {idea.profit}</small>
                   </div>
-                  <strong>{idea.profit}</strong>
-                </div>
+                  <div className="score">{idea.score}%</div>
+                </article>
               ))}
             </div>
           </div>
 
           <div className="panel">
-            <h2>📈 Markt</h2>
-            <div className="list">
-              {demoData.market.map((m) => (
-                <div className="mini" key={m.niche}>
-                  <b>{m.niche}</b>
-                  <span>Score {m.score}%</span>
-                  <small>Konkurrenz: {m.competition} · Gewinn: {m.profit}</small>
+            <div className="panelHead">
+              <h2>📈 Marktanalyse</h2>
+              <span>Demo</span>
+            </div>
+
+            <div className="marketList">
+              {market.map((item) => (
+                <div className="marketItem" key={item.name}>
+                  <div>
+                    <strong>{item.name}</strong>
+                    <small>{item.status}</small>
+                  </div>
+                  <b>{item.score}</b>
                 </div>
               ))}
             </div>
           </div>
         </section>
 
-        <section className="panel">
-          <h2>🛒 Shops</h2>
-          <div className="shopgrid">
-            {demoData.shops.map((shop) => (
-              <div className="shop" key={shop.name}>
-                <b>{shop.name}</b>
-                <span>{shop.status}</span>
-                <p>{shop.orders} Bestellungen · Trend {shop.trend}</p>
+        <section className="split bottom">
+          <div className="panel printer">
+            <div className="panelHead">
+              <h2>🖨 Bambu Lab P2S Combo</h2>
+              <span>Demo-Modul</span>
+            </div>
+            <div className="printerBox">
+              <div>
+                <strong>Makita Akkuhalter V2</strong>
+                <small>Druckfortschritt 64% · Restzeit 1h 28min</small>
               </div>
-            ))}
+              <div className="progress">
+                <i style={{ width: "64%" }} />
+              </div>
+              <div className="printerStats">
+                <span>Düse 220°</span>
+                <span>Bett 55°</span>
+                <span>AMS PLA Schwarz 74%</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="panel">
+            <div className="panelHead">
+              <h2>🛒 Shops</h2>
+              <span>vorbereitet</span>
+            </div>
+            <div className="shopGrid">
+              {shops.map((shop) => (
+                <div className="shop" key={shop.name}>
+                  <strong>{shop.name}</strong>
+                  <small>{shop.state}</small>
+                  <span>{shop.orders} Aufträge</span>
+                </div>
+              ))}
+            </div>
           </div>
         </section>
       </section>
 
       <aside className="assistant">
-        <h2>🎙 PhilAI Agent</h2>
+        <div className="assistantHead">
+          <h2>🎙 PhilAI Agent</h2>
+          <div className="online">
+            <CheckCircle2 size={16} />
+            online
+          </div>
+        </div>
+
         <div className="avatar">
           <div className="avatarOrb" />
         </div>
 
+        <div className="notice">
+          <AlertTriangle size={16} />
+          Demo-Modus: echte KI kommt in v1.1
+        </div>
+
         <div className="chat">
-          {messages.map((m, i) => (
-            <div className={`bubble ${m.role}`} key={i}>
-              {m.text}
+          {messages.map((message, index) => (
+            <div className={`bubble ${message.role}`} key={index}>
+              {message.text}
             </div>
           ))}
         </div>
 
-        <div className="chatbar">
+        <div className="inputRow">
           <input
             value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && send()}
+            onChange={(event) => setInput(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === "Enter") sendMessage();
+            }}
             placeholder="Frag PhilAI..."
           />
-          <button onClick={send} title="Senden"><Send size={18} /></button>
-          <button onClick={voiceDemo} className="voice" title="Sprache"><Mic size={18} /></button>
+          <button onClick={sendMessage} aria-label="Senden">
+            <Send size={18} />
+          </button>
+          <button className="voice" onClick={voiceInfo} aria-label="Sprache">
+            <Mic size={18} />
+          </button>
         </div>
       </aside>
     </main>

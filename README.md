@@ -1,47 +1,62 @@
-# PhilAI Browser v0.2
+# PhilAI 1.0
 
-Einfache Browser-Version deines Jarvis-ähnlichen KI-Agenten für dein 3D-Druck-Business.
+PhilAI ist dein Jarvis-ähnlicher KI-Agent für dein 3D-Druck-Business.
 
-## Was ist drin?
+Diese Version ist bewusst einfach gehalten:
+- kein Docker
+- kein lokales Backend
+- direkt für GitHub + Vercel vorbereitet
+- läuft im Browser
+
+## Funktionen
 
 - Modernes Dashboard
-- Jarvis/PhilAI Chat
-- Mikrofon-Button vorbereitet
+- Jarvis/PhilAI Agent Panel
 - Produktideen
 - Marktanalyse
 - Shop-Übersicht
-- Druckerstatus mit Demo-Daten
-- Keine Docker-Pflicht
-- Bereit für GitHub + Vercel
+- Druckerstatus
+- Aufgaben
+- Demo-Chat
+- Sprachbutton vorbereitet
 
-## Einfachster Weg
+## Deployment auf Vercel
 
 1. ZIP entpacken
-2. Ordner auf GitHub hochladen
-3. Bei Vercel mit GitHub verbinden
-4. Deploy klicken
-5. PhilAI im Browser öffnen
+2. Alle Dateien und Ordner auf GitHub hochladen
+3. Vercel öffnen
+4. GitHub-Projekt importieren
+5. Deploy klicken
 
-## Lokal testen, falls du später willst
-
-Du brauchst Node.js.
-
-```bash
-npm install
-npm run dev
-```
-
-Dann öffnen:
+Wichtig: Die Ordnerstruktur muss so aussehen:
 
 ```text
-http://localhost:3000
+app/
+components/
+lib/
+public/
+package.json
+next.config.mjs
+tsconfig.json
 ```
 
-## Nächster Ausbau
+## Spätere Versionen
 
-v0.3:
-- echte OpenAI-Anbindung
-- echte Spracheingabe
+v1.1:
+- echte OpenAI API
+- echte KI-Antworten
+
+v1.2:
+- Mikrofon Spracheingabe
 - Sprachausgabe
-- gespeicherte Produktideen
-- eigene Einstellungen
+
+v1.3:
+- Produktideen speichern
+- Marktanalyse speichern
+
+v1.4:
+- Bambu Lab P2S Modul
+- AMS Übersicht
+
+v1.5:
+- Etsy / Willhaben Bereiche
